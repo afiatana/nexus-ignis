@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Ignis - Titik Hubung Pengetahuan</title>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --card-bg: #111111;
+            --text-primary: #ffb000;
+            /* Amber */
+            --text-secondary: #cc8800;
+            --accent: #ff4500;
+            /* Orange Red */
+            --accent-hover: #ff0000;
+            --snippet-highlight: #331100;
+            --font-stack: 'Courier New', Courier, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-stack);
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            text-shadow: 0 0 2px rgba(255, 176, 0, 0.3);
+            /* Subtle glow */
+        }
+
+        /* Scanline effect */
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin-top: 5vh;
+            position: relative;
+            z-index: 10;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            border-bottom: 2px solid var(--text-secondary);
+            padding-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 10px rgba(255, 69, 0, 0.7);
+        }
+
+        .subtitle {
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            letter-spacing: 0.05em;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 3rem;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 1.25rem 1.5rem;
+            font-size: 1.25rem;
+            font-family: var(--font-stack);
+            background-color: #000;
+            border: 2px solid var(--text-primary);
+            border-radius: 0;
+            /* Square borders for retro feel */
+            color: var(--text-primary);
+            transition: all 0.3s;
+            box-shadow: 0 0 5px rgba(255, 176, 0, 0.2);
+        }
+
+        input[type="text"]::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 15px rgba(255, 69, 0, 0.4);
+            transform: scale(1.01);
+        }
+
+        .results {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .result-card {
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 4px;
+            /* Slight rounding */
+            border: 1px solid var(--text-secondary);
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .result-card::before {
+            content: '>';
+            position: absolute;
+            left: 0.5rem;
+            top: 1.5rem;
+            color: var(--accent);
+            width: 1rem;
+            height: 1rem;
+            opacity: 0.5;
+        }
+
+        .result-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 8px rgba(255, 69, 0, 0.2);
+        }
+
+        .url {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            text-decoration: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-family: var(--font-stack);
+        }
+
+        .url:hover {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .result-title {
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            text-decoration: none;
+            display: block;
+        }
+
+        .result-title:hover {
+            text-decoration: underline;
+            color: var(--accent);
+        }
+
+        .snippet {
+            color: #ddd;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .snippet b {
+            background-color: var(--snippet-highlight);
+            color: var(--accent);
+            padding: 0 2px;
+            font-weight: bold;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-top: 2rem;
+            font-style: italic;
+            border: 1px dashed var(--text-secondary);
+            padding: 2rem;
+        }
+
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 2.25rem;
+            }
+
+            .container {
+                padding: 0 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Nexus Ignis</h1>
+            <p class="subtitle">Titik Hubung Pengetahuan yang Terlupakan</p>
+        </div>
+
+        <form action="/search" method="GET" class="search-box">
+            <input type="text" name="q" placeholder="> Masukkan kueri pencarian..." value="{{ query }}" required
+                autocomplete="off" autofocus>
+        </form>
+
+        <div class="results">
+            {% if query %}
+            {% if results %}
+            {% for result in results %}
+            <div class="result-card">
+                <a href="{{ result.original_url }}" class="result-title" target="_blank">{{ result.original_url }}</a>
+                <a href="{{ result.original_url }}" class="url" target="_blank">{{ result.original_url }}</a>
+                <div class="snippet">
+                    ...{{ result.snippet|safe }}...
+                </div>
+                <div style="margin-top: 0.5rem; font-size: 0.8em; color: var(--text-secondary);">
+                    [Archived: {{ result.archive_timestamp }}]
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="empty-state">
+                SYSTEM MESSAGE: Data '{{ query }}' not found in archives.
+            </div>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</body>
+
+</html>
