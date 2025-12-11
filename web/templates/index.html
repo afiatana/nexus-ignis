@@ -209,6 +209,41 @@
                 padding: 0 1rem;
             }
         }
+
+        /* Autocomplete Styles */
+        .suggestions-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background-color: #000;
+            border: 2px solid var(--text-primary);
+            border-top: none;
+            list-style: none;
+            z-index: 100;
+            display: none;
+            max-height: 300px;
+            overflow-y: auto;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .suggestions-list li {
+            padding: 10px 1.5rem;
+            cursor: pointer;
+            border-bottom: 1px solid #222;
+            color: var(--text-secondary);
+            font-family: var(--font-stack);
+        }
+
+        .suggestions-list li:hover {
+            background-color: var(--text-primary);
+            color: #000;
+            font-weight: bold;
+        }
+
+        .suggestions-list li:last-child {
+            border-bottom: none;
+        }
     </style>
 </head>
 
@@ -220,9 +255,59 @@
         </div>
 
         <form action="/search" method="GET" class="search-box">
-            <input type="text" name="q" placeholder="> Masukkan kueri pencarian..." value="{{ query }}" required
-                autocomplete="off" autofocus>
+            <input type="text" id="searchInput" name="q" placeholder="> Masukkan kueri pencarian..." value="{{ query }}"
+                required autocomplete="off" autofocus>
+            <ul id="suggestions" class="suggestions-list"></ul>
         </form>
+
+        <script>
+            const searchInput = document.getElementById('searchInput');
+            const suggestionsList = document.getElementById('suggestions');
+            let debounceTimer;
+
+            searchInput.addEventListener('input', function () {
+                const query = this.value;
+
+                clearTimeout(debounceTimer);
+
+                if (query.length < 2) {
+                    suggestionsList.style.display = 'none';
+                    return;
+                }
+
+                debounceTimer = setTimeout(() => {
+                    fetch(`/suggest?q=${encodeURIComponent(query)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.length > 0) {
+                                suggestionsList.innerHTML = '';
+                                data.forEach(word => {
+                                    const li = document.createElement('li');
+                                    li.textContent = '> ' + word;
+                                    li.addEventListener('click', () => {
+                                        searchInput.value = word;
+                                        suggestionsList.style.display = 'none';
+                                        // Optional: Auto submit
+                                        // searchInput.form.submit();
+                                    });
+                                    suggestionsList.appendChild(li);
+                                });
+                                suggestionsList.style.display = 'block';
+                            } else {
+                                suggestionsList.style.display = 'none';
+                            }
+                        })
+                        .catch(err => console.error('Error fetching suggestions:', err));
+                }, 300); // 300ms debounce
+            });
+
+            // Close suggestions when clicking outside
+            document.addEventListener('click', function (e) {
+                if (e.target !== searchInput && e.target !== suggestionsList) {
+                    suggestionsList.style.display = 'none';
+                }
+            });
+        </script>
 
         <div class="results">
             {% if query %}

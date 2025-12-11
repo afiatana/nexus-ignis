@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import psycopg2
 import os
 
@@ -12,10 +12,6 @@ def get_db_connection():
     except Exception as e:
         print(f"DB Error: {e}")
         return None
-
-@app.route('/')
-def index():
-    return render_template('index.html', query="", results=[])
 
 def init_db():
     """Initializes the database using schema.sql"""
@@ -38,6 +34,10 @@ def init_db():
 if os.environ.get("DATABASE_URL"):
     with app.app_context():
         init_db()
+
+@app.route('/')
+def index():
+    return render_template('index.html', query="", results=[])
 
 @app.route('/search')
 def search():
@@ -73,6 +73,36 @@ def search():
                 print(f"Search Error: {e}")
 
     return render_template('index.html', query=query, results=results)
+
+@app.route('/suggest')
+def suggest():
+    q = request.args.get('q', '')
+    if not q or len(q) < 2:
+        return jsonify([])
+
+    suggestions = []
+    conn = get_db_connection()
+    if conn:
+        try:
+            cur = conn.cursor()
+            # Gunakan ts_stat untuk mencari kata-kata yang paling sering muncul
+            # yang diawali dengan huruf yang diketik user (prefix match)
+            sql = """
+                SELECT word 
+                FROM ts_stat('SELECT to_tsvector(''indonesian'', cleaned_text) FROM archived_documents') 
+                WHERE word ILIKE %s 
+                ORDER BY nentry DESC 
+                LIMIT 5;
+            """
+            cur.execute(sql, (q + '%',))
+            rows = cur.fetchall()
+            suggestions = [row[0] for row in rows]
+            cur.close()
+            conn.close()
+        except Exception as e:
+            print(f"Suggestion Error: {e}")
+            
+    return jsonify(suggestions)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
