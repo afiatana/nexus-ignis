@@ -1,3 +1,8 @@
+// Configuration
+const API_URL = 'https://your-railway-app.up.railway.app/submit-url';
+// ⚠️ IMPORTANT: Update this URL after deploying to Railway!
+// Example: 'https://nexus-ignis-production.up.railway.app/submit-url'
+
 // Background service worker for detecting 404 pages
 chrome.webNavigation.onCompleted.addListener(async (details) => {
     // Only process main frame (not iframes)
@@ -44,7 +49,7 @@ function detectDeadPage(currentUrl) {
 
     if (is404) {
         // Send URL to Nexus Ignis API
-        fetch('https://your-railway-app.up.railway.app/submit-url', {
+        fetch(API_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -74,7 +79,7 @@ function detectDeadPage(currentUrl) {
 // Listen for manual submissions from popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'submitUrl') {
-        fetch('https://your-railway-app.up.railway.app/submit-url', {
+        fetch(API_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

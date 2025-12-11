@@ -15,15 +15,16 @@
 
 3. **Konfigurasi (PENTING!)**
    - Buka file `background.js` di folder extension
-   - Ganti URL API:
+   - Edit baris 2, ganti URL API:
      ```javascript
-     // Ganti ini:
-     'https://your-railway-app.up.railway.app/submit-url'
+     // GANTI INI (baris 2):
+     const API_URL = 'https://your-railway-app.up.railway.app/submit-url';
      
-     // Dengan URL Railway Anda yang sebenarnya:
-     'https://nexus-ignis-production.up.railway.app/submit-url'
+     // DENGAN URL Railway Anda yang sebenarnya:
+     const API_URL = 'https://nexus-ignis-production.up.railway.app/submit-url';
      ```
-   - Save file dan reload extension di Chrome
+   - Save file
+   - Kembali ke `chrome://extensions` dan klik tombol reload (🔄) pada extension
 
 ## Cara Kerja
 

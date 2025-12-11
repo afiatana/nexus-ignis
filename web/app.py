@@ -157,7 +157,13 @@ def submit_url():
         # Append to seed_list.txt
         import os
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        seed_file = os.path.join(base_dir, 'data', 'seed_list.txt')
+        data_dir = os.path.join(base_dir, 'data')
+        seed_file = os.path.join(data_dir, 'seed_list.txt')
+        
+        # Ensure data directory exists
+        if not os.path.exists(data_dir):
+            os.makedirs(data_dir)
+            print(f"[Submit] Created data directory: {data_dir}")
         
         # Check if URL already exists
         existing_urls = []
@@ -171,6 +177,7 @@ def submit_url():
             print(f"[Submit] New URL added from {source}: {url}")
             return jsonify({"success": True, "message": "URL submitted successfully"})
         else:
+            print(f"[Submit] Duplicate URL from {source}: {url}")
             return jsonify({"success": True, "message": "URL already in queue"})
             
     except Exception as e:
