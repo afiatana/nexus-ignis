@@ -78,7 +78,7 @@ def search():
             except Exception as e:
                 print(f"Search Error: {e}")
 
-    return render_template('index.html', query=query, results=results)
+    return render_template('search_results.html', query=query, results=results)
 
 @app.route('/suggest')
 def suggest():
