@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tentang Nexus Ignis - Arsip Pengetahuan Digital</title>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --card-bg: #111111;
+            --text-primary: #ffb000;
+            --text-secondary: #cc8800;
+            --accent: #ff4500;
+            --accent-hover: #ff0000;
+            --font-stack: 'Courier New', Courier, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-stack);
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        /* Scanline effect */
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        .nav {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--text-secondary);
+        }
+
+        .nav a {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .nav a:hover {
+            color: var(--accent-hover);
+            text-shadow: 0 0 5px rgba(255, 69, 0, 0.5);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 10px rgba(255, 69, 0, 0.7);
+            text-align: center;
+        }
+
+        .tagline {
+            text-align: center;
+            font-size: 1.2rem;
+            color: var(--text-primary);
+            margin-bottom: 3rem;
+            font-style: italic;
+        }
+
+        .section {
+            background: var(--card-bg);
+            border: 2px solid var(--text-secondary);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: border-color 0.3s;
+        }
+
+        .section:hover {
+            border-color: var(--accent);
+        }
+
+        h2 {
+            color: var(--accent);
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h3 {
+            color: var(--text-primary);
+            font-size: 1.3rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: #ddd;
+        }
+
+        .highlight {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        ul li {
+            padding: 0.5rem 0;
+            padding-left: 2rem;
+            position: relative;
+            color: #ddd;
+        }
+
+        ul li::before {
+            content: '>';
+            position: absolute;
+            left: 0.5rem;
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .tech-item {
+            background: #000;
+            padding: 1rem;
+            border: 1px solid var(--text-secondary);
+            text-align: center;
+        }
+
+        .tech-item .tech-name {
+            color: var(--accent);
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .tech-item .tech-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .stat-box {
+            background: #000;
+            padding: 1.5rem;
+            border: 2px solid var(--accent);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            color: var(--accent);
+            font-weight: bold;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        .cta-box {
+            background: var(--accent);
+            color: #000;
+            padding: 2rem;
+            text-align: center;
+            margin-top: 3rem;
+            border: none;
+        }
+
+        .cta-box h2 {
+            color: #000;
+        }
+
+        .cta-box p {
+            color: #000;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: #000;
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: bold;
+            text-transform: uppercase;
+            border: 2px solid #000;
+            margin-top: 1rem;
+            transition: all 0.3s;
+        }
+
+        .button:hover {
+            background: var(--accent-hover);
+            color: #000;
+            border-color: #000;
+        }
+
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .section {
+                padding: 1.5rem;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="nav">
+            <a href="/">← Kembali ke Pencarian</a>
+        </div>
+
+        <h1>🔥 Nexus Ignis 🔥</h1>
+        <p class="tagline">"Titik Hubung Pengetahuan yang Terlupakan"</p>
+
+        <!-- Mission Statement -->
+        <div class="section">
+            <h2>📜 Misi Kami</h2>
+            <p>
+                <span class="highlight">Nexus Ignis</span> adalah mesin pencari arsip digital yang didedikasikan untuk
+                <strong>menyelamatkan dan mengindeks konten web yang telah hilang</strong>. Dalam era digital yang
+                bergerak cepat,
+                jutaan halaman web menghilang setiap tahun—baik karena shutdown layanan, perubahan URL, atau penghapusan
+                konten.
+            </p>
+            <p>
+                Kami percaya bahwa <span class="highlight">pengetahuan tidak boleh hilang hanya karena linknya
+                    mati</span>.
+                Setiap artikel, diskusi forum, dokumentasi teknis, atau penelitian akademik yang pernah ada di internet
+                memiliki nilai historis dan edukatif yang patut dilestarikan.
+            </p>
+        </div>
+
+        <!-- The Problem -->
+        <div class="section">
+            <h2>⚠️ Masalah yang Kami Selesaikan</h2>
+
+            <h3>Link Rot - Epidemi Digital</h3>
+            <p>
+                Studi menunjukkan bahwa 25-50% link di web akan mati dalam 7 tahun. Fenomena ini disebut
+                <span class="highlight">"Link Rot"</span> atau <span class="highlight">"Content Drift"</span>.
+            </p>
+
+            <ul>
+                <li><strong>Friendster, GeoCities, Yahoo! Groups</strong> - Platform dengan jutaan konten pengguna yang
+                    hilang selamanya</li>
+                <li><strong>Paper akademik</strong> - Referensi yang tidak bisa diakses lagi, merusak chain of knowledge
+                </li>
+                <li><strong>Forum teknis</strong> - Solusi programming yang sudah tidak bisa dicari</li>
+                <li><strong>Berita lama</strong> - Arsip sejarah yang penting untuk riset</li>
+            </ul>
+
+            <h3>Tantangan Peneliti & Developer</h3>
+            <p>
+                Bayangkan Anda membaca paper yang mengutip sumber penting, tapi linknya 404.
+                Atau mencari error message di Google, menemukan thread forum yang pas, tapi sudah offline.
+                <strong>Nexus Ignis memecahkan masalah ini.</strong>
+            </p>
+        </div>
+
+        <!-- How It Works -->
+        <div class="section">
+            <h2>🔧 Cara Kerja Sistem</h2>
+
+            <h3>1. Koleksi URL (Dead Link Discovery)</h3>
+            <p>Sistem kami mengumpulkan URL yang tidak lagi aktif melalui 3 metode:</p>
+            <ul>
+                <li><strong>Browser Extension</strong> - Auto-detect halaman 404 saat user browsing</li>
+                <li><strong>Community Submission</strong> - User melaporkan link mati via website</li>
+                <li><strong>Manual Seed List</strong> - Database URL yang dikurasi</li>
+            </ul>
+
+            <h3>2. Pengarsipan Otomatis (Wayback Machine Integration)</h3>
+            <p>
+                Setiap URL yang terdeteksi mati akan dicek ke Internet Archive's Wayback Machine.
+                Jika snapshot tersedia, kami akan:
+            </p>
+            <ul>
+                <li>Download snapshot terakhir yang tersedia</li>
+                <li>Ekstrak dan bersihkan teks konten</li>
+                <li>Auto-kategorisasi (Code, Academic, News, Forum, General)</li>
+            </ul>
+
+            <h3>3. Indexing & Full-Text Search</h3>
+            <p>
+                Konten diindeks menggunakan <strong>PostgreSQL Full-Text Search</strong> dengan:
+            </p>
+            <ul>
+                <li>Stemming & stop-words bahasa Indonesia</li>
+                <li>TF-IDF ranking untuk relevansi hasil</li>
+                <li>Keyword highlighting pada snippet</li>
+                <li>Category filtering untuk pencarian spesifik</li>
+            </ul>
+
+            <h3>4. Smart Search Interface</h3>
+            <p>User dapat mencari konten yang hilang dengan:</p>
+            <ul>
+                <li><strong>Autocomplete prediction</strong> - AI suggest kata kunci berdasarkan database</li>
+                <li><strong>Relevance ranking</strong> - Hasil terbaik di atas</li>
+                <li><strong>Category badges</strong> - Visual identifier jenis konten</li>
+                <li><strong>Archived timestamp</strong> - Kapan konten terakhir di-archive</li>
+            </ul>
+        </div>
+
+        <!-- Features -->
+        <div class="section">
+            <h2>✨ Fitur Unggulan</h2>
+
+            <div class="tech-stack">
+                <div class="tech-item">
+                    <div class="tech-name">🤖 Auto-Categorization</div>
+                    <div class="tech-desc">AI mendeteksi jenis konten: Code, Academic, News, Forum</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-name">🔍 Smart Search</div>
+                    <div class="tech-desc">Autocomplete, ranking, dan highlighting</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-name">🔥 Browser Extension</div>
+                    <div class="tech-desc">Auto-detect 404 pages saat browsing</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-name">👥 Community-Driven</div>
+                    <div class="tech-desc">User bisa kontribusi via submission form</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-name">⏰ Daily Automation</div>
+                    <div class="tech-desc">GitHub Actions crawl & index otomatis</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-name">🌐 Open Source</div>
+                    <div class="tech-desc">Transparan, auditable, community-owned</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tech Stack -->
+        <div class="section">
+            <h2>⚙️ Teknologi</h2>
+
+            <h3>Backend</h3>
+            <ul>
+                <li><strong>Python + Flask</strong> - Web framework ringan dan powerful</li>
+                <li><strong>PostgreSQL</strong> - Database dengan Full-Text Search native</li>
+                <li><strong>BeautifulSoup</strong> - HTML parsing dan text extraction</li>
+                <li><strong>Requests</strong> - HTTP client untuk archive retrieval</li>
+            </ul>
+
+            <h3>Frontend</h3>
+            <ul>
+                <li><strong>Vanilla JavaScript</strong> - No framework bloat, fast & responsive</li>
+                <li><strong>Retro Terminal CSS</strong> - Nostalgic aesthetic dengan modern UX</li>
+                <li><strong>Progressive Enhancement</strong> - Works tanpa JS, enhanced dengan JS</li>
+            </ul>
+
+            <h3>Infrastructure</h3>
+            <ul>
+                <li><strong>Railway.app</strong> - Cloud hosting dengan auto-deploy</li>
+                <li><strong>GitHub Actions</strong> - CI/CD dan scheduled automation</li>
+                <li><strong>Internet Archive API</strong> - Source of archived content</li>
+            </ul>
+
+            <h3>Distribution</h3>
+            <ul>
+                <li><strong>Chrome Extension</strong> - Manifest V3 dengan auto-detection</li>
+                <li><strong>GitHub Repository</strong> - Version control & collaboration</li>
+            </ul>
+        </div>
+
+        <!-- Stats -->
+        <div class="section">
+            <h2>📊 Sistem Metrics</h2>
+            <div class="stats">
+                <div class="stat-box">
+                    <span class="stat-number">∞</span>
+                    <div class="stat-label">Scalability</div>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-number">24/7</span>
+                    <div class="stat-label">Availability</div>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-number">100%</span>
+                    <div class="stat-label">Open Source</div>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-number">5</span>
+                    <div class="stat-label">Auto Categories</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vision -->
+        <div class="section">
+            <h2>🌟 Visi Masa Depan</h2>
+
+            <h3>Short-term (3-6 bulan)</h3>
+            <ul>
+                <li>Koleksi 10,000+ archived pages</li>
+                <li>100+ active extension users</li>
+                <li>Multi-language support (English, Indonesian)</li>
+                <li>API publik untuk developer</li>
+            </ul>
+
+            <h3>Long-term (1-2 tahun)</h3>
+            <ul>
+                <li>1 juta+ archived documents</li>
+                <li>Kolaborasi dengan universitas untuk research data</li>
+                <li>Sentiment analysis & topic modeling</li>
+                <li>Decentralized storage (IPFS integration)</li>
+                <li>Become go-to resource untuk digital archaeology</li>
+            </ul>
+        </div>
+
+        <!-- Call to Action -->
+        <div class="cta-box">
+            <h2>🚀 Bergabunglah dengan Misi Kami</h2>
+            <p>
+                Setiap link yang Anda laporkan, setiap pencarian yang Anda lakukan,
+                membantu melestarikan pengetahuan digital untuk generasi mendatang.
+            </p>
+            <a href="/" class="button">Mulai Mencari Sekarang</a>
+            <a href="/download-extension" class="button">Download Extension</a>
+        </div>
+
+        <!-- Footer -->
+        <div class="section" style="margin-top: 3rem; text-align: center; border: none; background: transparent;">
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                Dibuat dengan 🔥 untuk melawan Link Rot<br>
+                <span style="color: var(--accent);">Nexus Ignis</span> © 2025 -
+                <a href="https://github.com/afiatana/nexus-ignis" target="_blank" style="color: var(--accent);">GitHub
+                    Repository</a>
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>

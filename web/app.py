@@ -39,6 +39,10 @@ if os.environ.get("DATABASE_URL"):
 def index():
     return render_template('index.html', query="", results=[])
 
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
 @app.route('/search')
 def search():
     query = request.args.get('q', '')
