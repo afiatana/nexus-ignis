@@ -24,6 +24,16 @@ class Collector:
         total_urls = len(urls)
         print(f"[Collector] Ditemukan {total_urls} URL untuk divalidasi.\n")
 
+        # Connect to DB for status updates
+        try:
+            from db.connector import DBConnector
+            db = DBConnector()
+            conn = db.get_connection()
+            cur = conn.cursor() if conn else None
+        except:
+            conn = None
+            cur = None
+
         for index, url in enumerate(urls, 1):
             target_url = url
             if not target_url.startswith(('http://', 'https://')):
@@ -57,7 +67,19 @@ class Collector:
             else:
                 print(f"-> HIDUP ({reason})")
 
-            time.sleep(3)
+            # DB Update Logic
+            if conn and cur:
+                try:
+                    db_status = 'CONFIRMED_DEAD' if is_dead else 'ALIVE'
+                    cur.execute("UPDATE reported_urls SET status=%s WHERE url=%s", (db_status, url))
+                    conn.commit()
+                except Exception as e:
+                    print(f"  [DB Sync Error]: {e}")
+
+            time.sleep(1) # Faster rate limit for verification
+            
+        if conn:
+            conn.close()
 
         print(f"\n[Collector] Menyimpan {len(dead_urls)} URL mati ke {self.output_file}...")
         try:
