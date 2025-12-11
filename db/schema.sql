@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS archived_documents (
     original_url TEXT UNIQUE NOT NULL,
     archive_timestamp TIMESTAMP WITH TIME ZONE, -- Menggunakan TIMESTAMPTZ agar akurat
     cleaned_text TEXT,
+    category VARCHAR(50) DEFAULT 'General', -- Auto-detected category
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

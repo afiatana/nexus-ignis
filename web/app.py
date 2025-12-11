@@ -49,11 +49,12 @@ def search():
         if conn:
             try:
                 cur = conn.cursor()
-                # Full Text Search
+                # Full Text Search with Category
                 sql = """
                     SELECT original_url, 
                            ts_headline('indonesian', cleaned_text, plainto_tsquery('indonesian', %s)) as snippet,
-                           archive_timestamp
+                           archive_timestamp,
+                           category
                     FROM archived_documents
                     WHERE to_tsvector('indonesian', cleaned_text) @@ plainto_tsquery('indonesian', %s)
                     ORDER BY ts_rank(to_tsvector('indonesian', cleaned_text), plainto_tsquery('indonesian', %s)) DESC
@@ -65,7 +66,8 @@ def search():
                     results.append({
                         "original_url": row[0],
                         "snippet": row[1],
-                        "archive_timestamp": row[2]
+                        "archive_timestamp": row[2],
+                        "category": row[3] if len(row) > 3 else "General"
                     })
                 cur.close()
                 conn.close()

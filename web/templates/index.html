@@ -244,6 +244,49 @@
         .suggestions-list li:last-child {
             border-bottom: none;
         }
+
+        /* Category Badge Styles */
+        .category-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            margin-left: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border: 1px solid;
+            border-radius: 2px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .category-code {
+            background-color: #1a1a2e;
+            color: #00ff41;
+            border-color: #00ff41;
+        }
+
+        .category-academic {
+            background-color: #1a1a2e;
+            color: #00bfff;
+            border-color: #00bfff;
+        }
+
+        .category-news {
+            background-color: #1a1a2e;
+            color: #ffaa00;
+            border-color: #ffaa00;
+        }
+
+        .category-forum {
+            background-color: #1a1a2e;
+            color: #ff00ff;
+            border-color: #ff00ff;
+        }
+
+        .category-general {
+            background-color: #1a1a2e;
+            color: var(--text-secondary);
+            border-color: var(--text-secondary);
+        }
     </style>
 </head>
 
@@ -314,7 +357,10 @@
             {% if results %}
             {% for result in results %}
             <div class="result-card">
-                <a href="{{ result.original_url }}" class="result-title" target="_blank">{{ result.original_url }}</a>
+                <a href="{{ result.original_url }}" class="result-title" target="_blank">
+                    {{ result.original_url }}
+                    <span class="category-badge category-{{ result.category|lower }}">{{ result.category }}</span>
+                </a>
                 <a href="{{ result.original_url }}" class="url" target="_blank">{{ result.original_url }}</a>
                 <div class="snippet">
                     ...{{ result.snippet|safe }}...
