@@ -20,8 +20,25 @@ def init_db():
     conn = get_db_connection()
     if conn:
         try:
-            with app.open_resource('../db/schema.sql', mode='r') as f:
-                schema_sql = f.read()
+            # Try multiple possible paths for schema.sql
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            schema_paths = [
+                os.path.join(base_dir, 'db', 'schema.sql'),  # Local/Railway
+                os.path.join(os.path.dirname(__file__), '..', 'db', 'schema.sql'),  # Relative
+                '/app/db/schema.sql',  # Railway absolute path
+            ]
+            
+            schema_sql = None
+            for schema_path in schema_paths:
+                if os.path.exists(schema_path):
+                    with open(schema_path, 'r') as f:
+                        schema_sql = f.read()
+                    print(f"Found schema at: {schema_path}")
+                    break
+            
+            if not schema_sql:
+                print("Warning: schema.sql not found. Database may need manual initialization.")
+                return
             
             cur = conn.cursor()
             cur.execute(schema_sql)

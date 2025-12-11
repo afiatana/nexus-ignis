@@ -1,0 +1,58 @@
+name: Weekly Database Backup
+
+on:
+  schedule:
+    # Every Sunday at 3:00 AM WIB (20:00 UTC Saturday)
+    - cron: '0 20 * * 6'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  backup_database:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install PostgreSQL Client
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y postgresql-client
+
+    - name: Create Database Backup
+      env:
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      run: |
+        # Create backup directory
+        mkdir -p backups
+        
+        # Generate backup filename with timestamp
+        BACKUP_FILE="backups/backup_$(date +%Y%m%d_%H%M%S).sql"
+        
+        # Create backup using pg_dump
+        pg_dump "$DATABASE_URL" > "$BACKUP_FILE"
+        
+        # Compress backup to save space
+        gzip "$BACKUP_FILE"
+        
+        echo "Backup created: ${BACKUP_FILE}.gz"
+        ls -lh backups/
+
+    - name: Upload Backup Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: database-backup-${{ github.run_number }}
+        path: backups/*.sql.gz
+        retention-days: 30 # Keep backups for 30 days
+
+    - name: Backup Summary
+      run: |
+        echo "✅ Database backup completed successfully!"
+        echo "📁 Backup file: backups/backup_$(date +%Y%m%d)_*.sql.gz"
+        echo "📊 Backup size: $(du -h backups/*.sql.gz | cut -f1)"
+        echo "🗓️ Retention: 30 days"
+        echo ""
+        echo "To download backup:"
+        echo "1. Go to Actions tab"
+        echo "2. Click on this workflow run"
+        echo "3. Download artifact from 'Artifacts' section"
