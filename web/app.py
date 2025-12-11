@@ -1,6 +1,8 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_file
 import psycopg2
 import os
+import zipfile
+import tempfile
 
 app = Flask(__name__)
 
@@ -188,11 +190,6 @@ def submit_url():
 def download_extension():
     """Serve the browser extension for download"""
     try:
-        from flask import send_file
-        import os
-        import zipfile
-        import tempfile
-        
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         extension_dir = os.path.join(base_dir, 'extension')
         

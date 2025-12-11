@@ -57,7 +57,7 @@ class ArchiveRetriever:
                     content_response = requests.get(snapshot_url, timeout=20)
                     
                     if content_response.status_code == 200:
-                        soup = BeautifulSoup(content_response.text, "html.parser")
+                        soup = BeautifulSoup(content_response.text, "lxml")
                         
                         # Remove unwanted tags
                         for tag in soup(["script", "style", "nav", "footer", "header", "iframe"]):

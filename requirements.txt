@@ -2,5 +2,6 @@ flask
 psycopg2-binary
 requests
 beautifulsoup4
+lxml
 python-dotenv
 gunicorn

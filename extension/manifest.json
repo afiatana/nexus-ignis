@@ -5,7 +5,9 @@
     "description": "Automatically report 404 pages to Nexus Ignis archive system",
     "permissions": [
         "activeTab",
-        "webNavigation"
+        "webNavigation",
+        "scripting",
+        "notifications"
     ],
     "host_permissions": [
         "<all_urls>"
