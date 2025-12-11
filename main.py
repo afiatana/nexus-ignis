@@ -30,6 +30,31 @@ def main():
         print(f"File seed_list.txt tidak ditemukan di {seed_file}. Membuat dummy...")
         with open(seed_file, "w") as f:
             f.write("https://google.com\nhttps://thisurldoesnotexist123456789.com\nhttps://friendster.com")
+            
+    # Sync Reports from DB to Seed List
+    try:
+        from db.connector import DBConnector
+        db_reports = DBConnector()
+        conn = db_reports.get_connection()
+        if conn:
+            cur = conn.cursor()
+            cur.execute("SELECT url FROM reported_urls WHERE status='PENDING'")
+            pending_urls = [row[0] for row in cur.fetchall()]
+            
+            if pending_urls:
+                print(f"\n[Sync] Found {len(pending_urls)} pending reports in DB.")
+                with open(seed_file, "a", encoding="utf-8") as f:
+                    f.write("\n" + "\n".join(pending_urls))
+                print(f"[Sync] Added to seed_list.txt")
+                
+                # Update status to PROCESSING
+                cur.execute("UPDATE reported_urls SET status='PROCESSING' WHERE status='PENDING'")
+                conn.commit()
+                
+            cur.close()
+            conn.close()
+    except Exception as e:
+        print(f"[Sync] Warning: Failed to sync DB reports: {e}")
     
     # --- MODULE 1: COLLECTOR ---
     print("\n--- [1] COLLECTOR & VALIDATOR ---")

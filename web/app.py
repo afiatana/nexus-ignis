@@ -56,21 +56,20 @@ if os.environ.get("DATABASE_URL"):
 
 @app.route('/')
 def index():
-    # Read recent dead URLs from seed list
-    import os
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    seed_file = os.path.join(base_dir, 'data', 'seed_list.txt')
-    
     recent_urls = []
-    try:
-        if os.path.exists(seed_file):
-            with open(seed_file, 'r', encoding='utf-8') as f:
-                urls = [line.strip() for line in f if line.strip()]
-                # Reverse to show newest first (last added = first shown)
-                recent_urls = list(reversed(urls))[:20]  # Show max 20 recent URLs
-    except Exception as e:
-        print(f"Error reading seed list: {e}")
-    
+    conn = get_db_connection()
+    if conn:
+        try:
+            cur = conn.cursor()
+            cur.execute("SELECT url FROM reported_urls ORDER BY created_at DESC LIMIT 20;")
+            rows = cur.fetchall()
+            recent_urls = [row[0] for row in rows]
+            cur.close()
+            conn.close()
+        except Exception as e:
+            print(f"Error fetching recent urls: {e}")
+            if conn: conn.close()
+            
     return render_template('index.html', query="", results=[], recent_urls=recent_urls)
 
 @app.route('/about')
@@ -157,19 +156,20 @@ def suggest():
 
 @app.route('/api/recent-urls')
 def get_recent_urls():
-    """API endpoint to get recent dead URLs for auto-refresh"""
-    import os
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    seed_file = os.path.join(base_dir, 'data', 'seed_list.txt')
-    
+    """API endpoint to get recent reported URLs from DB"""
     recent_urls = []
-    try:
-        if os.path.exists(seed_file):
-            with open(seed_file, 'r', encoding='utf-8') as f:
-                urls = [line.strip() for line in f if line.strip()]
-                recent_urls = list(reversed(urls))[:20]
-    except Exception as e:
-        print(f"Error reading seed list: {e}")
+    conn = get_db_connection()
+    if conn:
+        try:
+            cur = conn.cursor()
+            cur.execute("SELECT url FROM reported_urls ORDER BY created_at DESC LIMIT 20;")
+            rows = cur.fetchall()
+            recent_urls = [row[0] for row in rows]
+            cur.close()
+            conn.close()
+        except Exception as e:
+            print(f"Error fetching recent urls: {e}")
+            if conn: conn.close()
     
     return jsonify({"urls": recent_urls})
 
@@ -184,31 +184,35 @@ def submit_url():
         if not url:
             return jsonify({"success": False, "message": "URL is required"}), 400
         
-        # Append to seed_list.txt
-        import os
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        data_dir = os.path.join(base_dir, 'data')
-        seed_file = os.path.join(data_dir, 'seed_list.txt')
-        
-        # Ensure data directory exists
-        if not os.path.exists(data_dir):
-            os.makedirs(data_dir)
-            print(f"[Submit] Created data directory: {data_dir}")
-        
-        # Check if URL already exists
-        existing_urls = []
-        if os.path.exists(seed_file):
-            with open(seed_file, 'r', encoding='utf-8') as f:
-                existing_urls = [line.strip() for line in f if line.strip()]
-        
-        if url not in existing_urls:
-            with open(seed_file, 'a', encoding='utf-8') as f:
-                f.write(url + '\n')
-            print(f"[Submit] New URL added from {source}: {url}")
-            return jsonify({"success": True, "message": "URL submitted successfully"})
-        else:
-            print(f"[Submit] Duplicate URL from {source}: {url}")
-            return jsonify({"success": True, "message": "URL already in queue"})
+        conn = get_db_connection()
+        if not conn:
+            return jsonify({"success": False, "message": "Database error"}), 500
+
+        try:
+            cur = conn.cursor()
+            # Try insert, ignore if duplicate
+            cur.execute("""
+                INSERT INTO reported_urls (url, source, status) 
+                VALUES (%s, %s, 'PENDING')
+                ON CONFLICT (url) DO NOTHING;
+            """, (url, source))
+            
+            rows_affected = cur.rowcount
+            conn.commit()
+            cur.close()
+            conn.close()
+            
+            if rows_affected > 0:
+                print(f"[Submit] New URL added from {source}: {url}")
+                return jsonify({"success": True, "message": "URL submitted successfully"})
+            else:
+                print(f"[Submit] Duplicate URL from {source}: {url}")
+                return jsonify({"success": True, "message": "URL already in queue"})
+                
+        except Exception as e:
+            print(f"[Submit] DB Error: {e}")
+            if conn: conn.close()
+            return jsonify({"success": False, "message": "Server error"}), 500
             
     except Exception as e:
         print(f"[Submit] Error: {e}")
