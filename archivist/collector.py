@@ -70,8 +70,13 @@ class Collector:
             # DB Update Logic
             if conn and cur:
                 try:
-                    db_status = 'CONFIRMED_DEAD' if is_dead else 'ALIVE'
-                    cur.execute("UPDATE reported_urls SET status=%s WHERE url=%s", (db_status, url))
+                    if is_dead:
+                        # If dead, mark as CONFIRMED
+                        cur.execute("UPDATE reported_urls SET status='CONFIRMED_DEAD' WHERE url=%s", (url,))
+                    else:
+                        # If alive, remove from DB to save space
+                        cur.execute("DELETE FROM reported_urls WHERE url=%s", (url,))
+                        print(f"  [DB] URL hidup dihapus dari database.")
                     conn.commit()
                 except Exception as e:
                     print(f"  [DB Sync Error]: {e}")
