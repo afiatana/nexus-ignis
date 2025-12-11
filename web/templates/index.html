@@ -53,12 +53,121 @@
             pointer-events: none;
         }
 
-        .container {
-            width: 100%;
-            max-width: 800px;
-            margin-top: 5vh;
+        .main-wrapper {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 2rem;
             position: relative;
             z-index: 10;
+        }
+
+        .container {
+            flex: 1;
+            max-width: 800px;
+            margin-top: 5vh;
+        }
+
+        .sidebar {
+            width: 350px;
+            margin-top: 5vh;
+            flex-shrink: 0;
+        }
+
+        .sidebar-sticky {
+            position: sticky;
+            top: 2rem;
+        }
+
+        .recent-urls {
+            background: var(--card-bg);
+            border: 2px solid var(--text-secondary);
+            padding: 1.5rem;
+        }
+
+        .recent-urls h3 {
+            color: var(--accent);
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .recent-urls-list {
+            max-height: 600px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent) var(--card-bg);
+        }
+
+        .recent-urls-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .recent-urls-list::-webkit-scrollbar-track {
+            background: #000;
+        }
+
+        .recent-urls-list::-webkit-scrollbar-thumb {
+            background: var(--accent);
+        }
+
+        .url-item {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: #000;
+            border: 1px solid var(--text-secondary);
+            word-wrap: break-word;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .url-item:hover {
+            border-color: var(--accent);
+            background: #0a0a0a;
+        }
+
+        .url-item a {
+            color: var(--text-primary);
+            text-decoration: none;
+            display: block;
+        }
+
+        .url-item a:hover {
+            color: var(--accent);
+        }
+
+        .url-index {
+            color: var(--accent);
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        .empty-urls {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 2rem 1rem;
+            font-style: italic;
+        }
+
+        @media (max-width: 1200px) {
+            .main-wrapper {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                max-width: 800px;
+                margin: 0 auto;
+            }
+
+            .sidebar-sticky {
+                position: static;
+            }
         }
 
         .header {
@@ -205,8 +314,8 @@
                 font-size: 2.25rem;
             }
 
-            .container {
-                padding: 0 1rem;
+            .main-wrapper {
+                padding: 1rem;
             }
         }
 
@@ -418,198 +527,262 @@
 </head>
 
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Nexus Ignis</h1>
-            <p class="subtitle">Titik Hubung Pengetahuan yang Terlupakan</p>
-        </div>
-
-        <form action="/search" method="GET" class="search-box">
-            <input type="text" id="searchInput" name="q" placeholder="> Masukkan kueri pencarian..." value="{{ query }}"
-                required autocomplete="off" autofocus>
-            <ul id="suggestions" class="suggestions-list"></ul>
-        </form>
-
-        <!-- Community Actions -->
-        <div class="actions-bar">
-            <button class="action-btn" id="reportBtn">📡 LAPORKAN LINK MATI</button>
-            <a href="/download-extension" class="action-btn">🔥 DOWNLOAD EXTENSION</a>
-            <a href="/about" class="action-btn">📖 TENTANG KAMI</a>
-        </div>
-
-        <!-- Report Modal -->
-        <div id="reportModal" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <div class="modal-header">LAPORKAN LINK MATI</div>
-                <form id="reportForm">
-                    <div class="form-group">
-                        <label>URL yang Mati:</label>
-                        <input type="url" id="deadUrl" placeholder="https://example.com/404" required>
-                    </div>
-                    <button type="submit" class="submit-modal-btn">KIRIM LAPORAN</button>
-                    <div id="formMessage" class="message"></div>
-                </form>
+    <div class="main-wrapper">
+        <div class="container">
+            <div class="header">
+                <h1>Nexus Ignis</h1>
+                <p class="subtitle">Titik Hubung Pengetahuan yang Terlupakan</p>
             </div>
-        </div>
 
-        <script>
-            const searchInput = document.getElementById('searchInput');
-            const suggestionsList = document.getElementById('suggestions');
-            let debounceTimer;
+            <form action="/search" method="GET" class="search-box">
+                <input type="text" id="searchInput" name="q" placeholder="> Masukkan kueri pencarian..."
+                    value="{{ query }}" required autocomplete="off" autofocus>
+                <ul id="suggestions" class="suggestions-list"></ul>
+            </form>
 
-            searchInput.addEventListener('input', function () {
-                const query = this.value;
+            <!-- Community Actions -->
+            <div class="actions-bar">
+                <button class="action-btn" id="reportBtn">📡 LAPORKAN LINK MATI</button>
+                <a href="/download-extension" class="action-btn">🔥 DOWNLOAD EXTENSION</a>
+                <a href="/about" class="action-btn">📖 TENTANG KAMI</a>
+            </div>
 
-                clearTimeout(debounceTimer);
+            <!-- Report Modal -->
+            <div id="reportModal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <div class="modal-header">LAPORKAN LINK MATI</div>
+                    <form id="reportForm">
+                        <div class="form-group">
+                            <label>URL yang Mati:</label>
+                            <input type="url" id="deadUrl" placeholder="https://example.com/404" required>
+                        </div>
+                        <button type="submit" class="submit-modal-btn">KIRIM LAPORAN</button>
+                        <div id="formMessage" class="message"></div>
+                    </form>
+                </div>
+            </div>
 
-                if (query.length < 2) {
-                    suggestionsList.style.display = 'none';
-                    return;
-                }
+            <script>
+                const searchInput = document.getElementById('searchInput');
+                const suggestionsList = document.getElementById('suggestions');
+                let debounceTimer;
 
-                debounceTimer = setTimeout(() => {
-                    fetch(`/suggest?q=${encodeURIComponent(query)}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.length > 0) {
-                                suggestionsList.innerHTML = '';
-                                data.forEach(word => {
-                                    const li = document.createElement('li');
-                                    li.textContent = '> ' + word;
-                                    li.addEventListener('click', () => {
-                                        searchInput.value = word;
-                                        suggestionsList.style.display = 'none';
-                                        // Optional: Auto submit
-                                        // searchInput.form.submit();
+                searchInput.addEventListener('input', function () {
+                    const query = this.value;
+
+                    clearTimeout(debounceTimer);
+
+                    if (query.length < 2) {
+                        suggestionsList.style.display = 'none';
+                        return;
+                    }
+
+                    debounceTimer = setTimeout(() => {
+                        fetch(`/suggest?q=${encodeURIComponent(query)}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.length > 0) {
+                                    suggestionsList.innerHTML = '';
+                                    data.forEach(word => {
+                                        const li = document.createElement('li');
+                                        li.textContent = '> ' + word;
+                                        li.addEventListener('click', () => {
+                                            searchInput.value = word;
+                                            suggestionsList.style.display = 'none';
+                                            // Optional: Auto submit
+                                            // searchInput.form.submit();
+                                        });
+                                        suggestionsList.appendChild(li);
                                     });
-                                    suggestionsList.appendChild(li);
-                                });
-                                suggestionsList.style.display = 'block';
-                            } else {
-                                suggestionsList.style.display = 'none';
-                            }
-                        })
-                        .catch(err => console.error('Error fetching suggestions:', err));
-                }, 300); // 300ms debounce
-            });
+                                    suggestionsList.style.display = 'block';
+                                } else {
+                                    suggestionsList.style.display = 'none';
+                                }
+                            })
+                            .catch(err => console.error('Error fetching suggestions:', err));
+                    }, 300); // 300ms debounce
+                });
 
-            // Close suggestions when clicking outside
-            document.addEventListener('click', function (e) {
-                if (e.target !== searchInput && e.target !== suggestionsList) {
-                    suggestionsList.style.display = 'none';
+                // Close suggestions when clicking outside
+                document.addEventListener('click', function (e) {
+                    if (e.target !== searchInput && e.target !== suggestionsList) {
+                        suggestionsList.style.display = 'none';
+                    }
+                });
+
+                // Modal functionality
+                const modal = document.getElementById('reportModal');
+                const reportBtn = document.getElementById('reportBtn');
+                const closeBtn = document.getElementsByClassName('close')[0];
+                const reportForm = document.getElementById('reportForm');
+                const formMessage = document.getElementById('formMessage');
+
+                reportBtn.onclick = function () {
+                    modal.style.display = 'block';
                 }
-            });
 
-            // Modal functionality
-            const modal = document.getElementById('reportModal');
-            const reportBtn = document.getElementById('reportBtn');
-            const closeBtn = document.getElementsByClassName('close')[0];
-            const reportForm = document.getElementById('reportForm');
-            const formMessage = document.getElementById('formMessage');
-
-            reportBtn.onclick = function () {
-                modal.style.display = 'block';
-            }
-
-            closeBtn.onclick = function () {
-                modal.style.display = 'none';
-                formMessage.style.display = 'none';
-            }
-
-            window.onclick = function (event) {
-                if (event.target == modal) {
+                closeBtn.onclick = function () {
                     modal.style.display = 'none';
                     formMessage.style.display = 'none';
                 }
-            }
 
-            // Form submission
-            reportForm.onsubmit = async function (e) {
-                e.preventDefault();
-                const url = document.getElementById('deadUrl').value;
+                window.onclick = function (event) {
+                    if (event.target == modal) {
+                        modal.style.display = 'none';
+                        formMessage.style.display = 'none';
+                    }
+                }
 
-                formMessage.style.display = 'none';
+                // Form submission
+                reportForm.onsubmit = async function (e) {
+                    e.preventDefault();
+                    const url = document.getElementById('deadUrl').value;
 
-                try {
-                    const response = await fetch('/submit-url', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            url: url,
-                            source: 'community'
-                        })
-                    });
+                    formMessage.style.display = 'none';
 
-                    const data = await response.json();
+                    try {
+                        const response = await fetch('/submit-url', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                url: url,
+                                source: 'community'
+                            })
+                        });
 
-                    if (data.success) {
-                        formMessage.textContent = '✓ ' + data.message;
-                        formMessage.className = 'message success';
-                        formMessage.style.display = 'block';
-                        document.getElementById('deadUrl').value = '';
+                        const data = await response.json();
 
-                        setTimeout(() => {
-                            modal.style.display = 'none';
-                            formMessage.style.display = 'none';
-                        }, 2000);
-                    } else {
-                        formMessage.textContent = '✗ ' + data.message;
+                        if (data.success) {
+                            formMessage.textContent = '✓ ' + data.message;
+                            formMessage.className = 'message success';
+                            formMessage.style.display = 'block';
+                            document.getElementById('deadUrl').value = '';
+
+                            setTimeout(() => {
+                                modal.style.display = 'none';
+                                formMessage.style.display = 'none';
+                            }, 2000);
+                        } else {
+                            formMessage.textContent = '✗ ' + data.message;
+                            formMessage.className = 'message error';
+                            formMessage.style.display = 'block';
+                        }
+                    } catch (error) {
+                        formMessage.textContent = '✗ Connection error';
                         formMessage.className = 'message error';
                         formMessage.style.display = 'block';
                     }
-                } catch (error) {
-                    formMessage.textContent = '✗ Connection error';
-                    formMessage.className = 'message error';
-                    formMessage.style.display = 'block';
                 }
-            }
-        </script>
+            </script>
 
-        <div class="results">
-            {% if query %}
-            {% if results %}
-            {% for result in results %}
-            <div class="result-card">
-                <a href="{{ result.original_url }}" class="result-title" target="_blank">
-                    {{ result.original_url }}
-                    <span class="category-badge category-{{ result.category|lower }}">{{ result.category }}</span>
-                </a>
-                <a href="{{ result.original_url }}" class="url" target="_blank">{{ result.original_url }}</a>
-                <div class="snippet">
-                    ...{{ result.snippet|safe }}...
+            <script>
+                // Auto-refresh recent URLs sidebar
+                function refreshRecentUrls() {
+                    fetch('/api/recent-urls')
+                        .then(response => response.json())
+                        .then(data => {
+                            const urlsList = document.getElementById('recentUrlsList');
+
+                            if (data.urls && data.urls.length > 0) {
+                                urlsList.innerHTML = data.urls.map((url, index) => `
+                                    <div class="url-item">
+                                        <span class="url-index">#${index + 1}</span>
+                                        <a href="${url}" target="_blank" title="${url}">${url}</a>
+                                    </div>
+                                `).join('');
+                            } else {
+                                urlsList.innerHTML = `
+                                    <div class="empty-urls">
+                                        No dead links reported yet.<br>
+                                        Be the first to contribute!
+                                    </div>
+                                `;
+                            }
+                        })
+                        .catch(error => console.error('Error refreshing URLs:', error));
+                }
+
+                // Refresh every 10 seconds
+                setInterval(refreshRecentUrls, 10000);
+
+                // Also refresh when page becomes visible again
+                document.addEventListener('visibilitychange', () => {
+                    if (!document.hidden) {
+                        refreshRecentUrls();
+                    }
+                });
+            </script>
+
+            <div class="results">
+                {% if query %}
+                {% if results %}
+                {% for result in results %}
+                <div class="result-card">
+                    <a href="{{ result.original_url }}" class="result-title" target="_blank">
+                        {{ result.original_url }}
+                        <span class="category-badge category-{{ result.category|lower }}">{{ result.category }}</span>
+                    </a>
+                    <a href="{{ result.original_url }}" class="url" target="_blank">{{ result.original_url }}</a>
+                    <div class="snippet">
+                        ...{{ result.snippet|safe }}...
+                    </div>
+                    <div style="margin-top: 0.5rem; font-size: 0.8em; color: var(--text-secondary);">
+                        [Archived: {{ result.archive_timestamp }}]
+                    </div>
                 </div>
-                <div style="margin-top: 0.5rem; font-size: 0.8em; color: var(--text-secondary);">
-                    [Archived: {{ result.archive_timestamp }}]
+                {% endfor %}
+                {% else %}
+                <div class="empty-state">
+                    SYSTEM MESSAGE: Data '{{ query }}' not found in archives.
                 </div>
+                {% endif %}
+                {% endif %}
             </div>
-            {% endfor %}
-            {% else %}
-            <div class="empty-state">
-                SYSTEM MESSAGE: Data '{{ query }}' not found in archives.
+
+            <!-- Footer -->
+            <div
+                style="text-align: center; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--text-secondary);">
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">
+                    Dibuat dengan 🔥 untuk melawan Link Rot
+                </p>
+                <p style="font-size: 0.85rem;">
+                    <a href="/about" style="color: var(--accent); text-decoration: none;">Tentang Nexus Ignis</a>
+                    <span style="color: var(--text-secondary); margin: 0 0.5rem;">•</span>
+                    <a href="https://github.com/afiatana/nexus-ignis" target="_blank"
+                        style="color: var(--accent); text-decoration: none;">GitHub</a>
+                    <span style="color: var(--text-secondary); margin: 0 0.5rem;">•</span>
+                    <a href="https://myportfolio-aafafiatna.vercel.app" target="_blank"
+                        style="color: var(--accent); text-decoration: none;">Developer Portfolio</a>
+                </p>
             </div>
-            {% endif %}
-            {% endif %}
         </div>
 
-        <!-- Footer -->
-        <div
-            style="text-align: center; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--text-secondary);">
-            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">
-                Dibuat dengan 🔥 untuk melawan Link Rot
-            </p>
-            <p style="font-size: 0.85rem;">
-                <a href="/about" style="color: var(--accent); text-decoration: none;">Tentang Nexus Ignis</a>
-                <span style="color: var(--text-secondary); margin: 0 0.5rem;">•</span>
-                <a href="https://github.com/afiatana/nexus-ignis" target="_blank"
-                    style="color: var(--accent); text-decoration: none;">GitHub</a>
-                <span style="color: var(--text-secondary); margin: 0 0.5rem;">•</span>
-                <a href="https://myportfolio-aafafiatna.vercel.app" target="_blank"
-                    style="color: var(--accent); text-decoration: none;">Developer Portfolio</a>
-            </p>
-        </div>
+        <!-- Sidebar: Recent Dead URLs -->
+        <aside class="sidebar">
+            <div class="sidebar-sticky">
+                <div class="recent-urls">
+                    <h3>📡 RECENT REPORTS</h3>
+                    <div class="recent-urls-list" id="recentUrlsList">
+                        {% if recent_urls %}
+                        {% for url in recent_urls %}
+                        <div class="url-item">
+                            <span class="url-index">#{{ loop.index }}</span>
+                            <a href="{{ url }}" target="_blank" title="{{ url }}">{{ url }}</a>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="empty-urls">
+                            No dead links reported yet.<br>
+                            Be the first to contribute!
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </aside>
     </div>
 </body>
 

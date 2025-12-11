@@ -37,7 +37,22 @@ if os.environ.get("DATABASE_URL"):
 
 @app.route('/')
 def index():
-    return render_template('index.html', query="", results=[])
+    # Read recent dead URLs from seed list
+    import os
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    seed_file = os.path.join(base_dir, 'data', 'seed_list.txt')
+    
+    recent_urls = []
+    try:
+        if os.path.exists(seed_file):
+            with open(seed_file, 'r', encoding='utf-8') as f:
+                urls = [line.strip() for line in f if line.strip()]
+                # Reverse to show newest first (last added = first shown)
+                recent_urls = list(reversed(urls))[:20]  # Show max 20 recent URLs
+    except Exception as e:
+        print(f"Error reading seed list: {e}")
+    
+    return render_template('index.html', query="", results=[], recent_urls=recent_urls)
 
 @app.route('/about')
 def about():
@@ -109,6 +124,24 @@ def suggest():
             print(f"Suggestion Error: {e}")
             
     return jsonify(suggestions)
+
+@app.route('/api/recent-urls')
+def get_recent_urls():
+    """API endpoint to get recent dead URLs for auto-refresh"""
+    import os
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    seed_file = os.path.join(base_dir, 'data', 'seed_list.txt')
+    
+    recent_urls = []
+    try:
+        if os.path.exists(seed_file):
+            with open(seed_file, 'r', encoding='utf-8') as f:
+                urls = [line.strip() for line in f if line.strip()]
+                recent_urls = list(reversed(urls))[:20]
+    except Exception as e:
+        print(f"Error reading seed list: {e}")
+    
+    return jsonify({"urls": recent_urls})
 
 @app.route('/submit-url', methods=['POST'])
 def submit_url():
