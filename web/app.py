@@ -162,8 +162,21 @@ def get_recent_urls():
     if conn:
         try:
             cur = conn.cursor()
-            cur.execute("SELECT url FROM reported_urls ORDER BY created_at DESC LIMIT 20;")
+            # Get PENDING and CONFIRMED_DEAD, prioritizing Dead ones
+            # If user wants strictly "after execution", we should focus on CONFIRMED_DEAD
+            # But to show liveliness, we show PENDING too with a status indicator logic in frontend if needed.
+            # For now, let's fetch valid ones.
+            cur.execute("""
+                SELECT url, status 
+                FROM reported_urls 
+                WHERE status IN ('PENDING', 'CONFIRMED_DEAD') 
+                ORDER BY 
+                    CASE WHEN status = 'CONFIRMED_DEAD' THEN 1 ELSE 2 END, 
+                    created_at DESC 
+                LIMIT 20;
+            """)
             rows = cur.fetchall()
+            # Just return URL list for now to match frontend expectation
             recent_urls = [row[0] for row in rows]
             cur.close()
             conn.close()
