@@ -106,5 +106,71 @@ def suggest():
             
     return jsonify(suggestions)
 
+@app.route('/submit-url', methods=['POST'])
+def submit_url():
+    """API endpoint for receiving dead URL submissions from extension or community"""
+    try:
+        data = request.get_json()
+        url = data.get('url', '').strip()
+        source = data.get('source', 'unknown')  # 'extension' or 'community'
+        
+        if not url:
+            return jsonify({"success": False, "message": "URL is required"}), 400
+        
+        # Append to seed_list.txt
+        import os
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        seed_file = os.path.join(base_dir, 'data', 'seed_list.txt')
+        
+        # Check if URL already exists
+        existing_urls = []
+        if os.path.exists(seed_file):
+            with open(seed_file, 'r', encoding='utf-8') as f:
+                existing_urls = [line.strip() for line in f if line.strip()]
+        
+        if url not in existing_urls:
+            with open(seed_file, 'a', encoding='utf-8') as f:
+                f.write(url + '\n')
+            print(f"[Submit] New URL added from {source}: {url}")
+            return jsonify({"success": True, "message": "URL submitted successfully"})
+        else:
+            return jsonify({"success": True, "message": "URL already in queue"})
+            
+    except Exception as e:
+        print(f"[Submit] Error: {e}")
+        return jsonify({"success": False, "message": "Server error"}), 500
+
+@app.route('/download-extension')
+def download_extension():
+    """Serve the browser extension for download"""
+    try:
+        from flask import send_file
+        import os
+        import zipfile
+        import tempfile
+        
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        extension_dir = os.path.join(base_dir, 'extension')
+        
+        # Create a temporary ZIP file
+        temp_zip = tempfile.NamedTemporaryFile(delete=False, suffix='.zip')
+        
+        with zipfile.ZipFile(temp_zip.name, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for root, dirs, files in os.walk(extension_dir):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    arcname = os.path.relpath(file_path, extension_dir)
+                    zipf.write(file_path, arcname)
+        
+        return send_file(
+            temp_zip.name,
+            as_attachment=True,
+            download_name='nexus-ignis-extension.zip',
+            mimetype='application/zip'
+        )
+    except Exception as e:
+        print(f"[Download] Error: {e}")
+        return "Extension not found", 404
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

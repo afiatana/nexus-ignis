@@ -287,6 +287,133 @@
             color: var(--text-secondary);
             border-color: var(--text-secondary);
         }
+
+        /* Community Actions */
+        .actions-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--card-bg);
+            border: 2px solid var(--text-primary);
+            color: var(--text-primary);
+            font-family: var(--font-stack);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .action-btn:hover {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: var(--bg-color);
+            margin: 10% auto;
+            padding: 2rem;
+            border: 2px solid var(--accent);
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 0 20px rgba(255, 69, 0, 0.3);
+        }
+
+        .modal-header {
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        .close {
+            color: var(--text-secondary);
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: var(--accent);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            background: #000;
+            border: 2px solid var(--text-primary);
+            color: var(--text-primary);
+            font-family: var(--font-stack);
+        }
+
+        .submit-modal-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--accent);
+            color: #000;
+            border: none;
+            font-family: var(--font-stack);
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .submit-modal-btn:hover {
+            background: var(--accent-hover);
+        }
+
+        .message {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border: 1px solid;
+            text-align: center;
+            display: none;
+        }
+
+        .message.success {
+            border-color: #00ff41;
+            color: #00ff41;
+            background: rgba(0, 255, 65, 0.1);
+        }
+
+        .message.error {
+            border-color: #ff0000;
+            color: #ff0000;
+            background: rgba(255, 0, 0, 0.1);
+        }
     </style>
 </head>
 
@@ -302,6 +429,28 @@
                 required autocomplete="off" autofocus>
             <ul id="suggestions" class="suggestions-list"></ul>
         </form>
+
+        <!-- Community Actions -->
+        <div class="actions-bar">
+            <button class="action-btn" id="reportBtn">📡 LAPORKAN LINK MATI</button>
+            <a href="/download-extension" class="action-btn">🔥 DOWNLOAD EXTENSION</a>
+        </div>
+
+        <!-- Report Modal -->
+        <div id="reportModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <div class="modal-header">LAPORKAN LINK MATI</div>
+                <form id="reportForm">
+                    <div class="form-group">
+                        <label>URL yang Mati:</label>
+                        <input type="url" id="deadUrl" placeholder="https://example.com/404" required>
+                    </div>
+                    <button type="submit" class="submit-modal-btn">KIRIM LAPORAN</button>
+                    <div id="formMessage" class="message"></div>
+                </form>
+            </div>
+        </div>
 
         <script>
             const searchInput = document.getElementById('searchInput');
@@ -350,6 +499,72 @@
                     suggestionsList.style.display = 'none';
                 }
             });
+
+            // Modal functionality
+            const modal = document.getElementById('reportModal');
+            const reportBtn = document.getElementById('reportBtn');
+            const closeBtn = document.getElementsByClassName('close')[0];
+            const reportForm = document.getElementById('reportForm');
+            const formMessage = document.getElementById('formMessage');
+
+            reportBtn.onclick = function () {
+                modal.style.display = 'block';
+            }
+
+            closeBtn.onclick = function () {
+                modal.style.display = 'none';
+                formMessage.style.display = 'none';
+            }
+
+            window.onclick = function (event) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                    formMessage.style.display = 'none';
+                }
+            }
+
+            // Form submission
+            reportForm.onsubmit = async function (e) {
+                e.preventDefault();
+                const url = document.getElementById('deadUrl').value;
+
+                formMessage.style.display = 'none';
+
+                try {
+                    const response = await fetch('/submit-url', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            url: url,
+                            source: 'community'
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        formMessage.textContent = '✓ ' + data.message;
+                        formMessage.className = 'message success';
+                        formMessage.style.display = 'block';
+                        document.getElementById('deadUrl').value = '';
+
+                        setTimeout(() => {
+                            modal.style.display = 'none';
+                            formMessage.style.display = 'none';
+                        }, 2000);
+                    } else {
+                        formMessage.textContent = '✗ ' + data.message;
+                        formMessage.className = 'message error';
+                        formMessage.style.display = 'block';
+                    }
+                } catch (error) {
+                    formMessage.textContent = '✗ Connection error';
+                    formMessage.className = 'message error';
+                    formMessage.style.display = 'block';
+                }
+            }
         </script>
 
         <div class="results">
