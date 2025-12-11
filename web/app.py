@@ -218,7 +218,27 @@ def download_extension():
                 for file in files:
                     file_path = os.path.join(root, file)
                     arcname = os.path.relpath(file_path, extension_dir)
-                    zipf.write(file_path, arcname)
+                    
+                    # Dynamically update config.js with current server URL
+                    if file == 'config.js':
+                        # Get current base URL (e.g., https://my-app.railway.app/)
+                        base_url = request.url_root.rstrip('/')
+                        api_url = f"{base_url}/submit-url"
+                        
+                        # Create new config content
+                        config_content = f"""
+// Auto-generated config
+const CONFIG = {{
+    API_URL: '{api_url}'
+}};
+
+if (typeof module !== 'undefined' && module.exports) {{
+    module.exports = CONFIG;
+}}
+"""
+                        zipf.writestr(arcname, config_content)
+                    else:
+                        zipf.write(file_path, arcname)
         
         return send_file(
             temp_zip.name,

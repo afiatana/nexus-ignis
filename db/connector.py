@@ -106,21 +106,24 @@ class DBConnector:
             query = """
                 INSERT INTO archived_documents (original_url, archive_timestamp, cleaned_text, category)
                 VALUES %s
-                ON CONFLICT (original_url) DO UPDATE 
-                SET archive_timestamp = EXCLUDED.archive_timestamp,
-                    cleaned_text = EXCLUDED.cleaned_text,
+                ON CONFLICT (original_url, archive_timestamp) DO UPDATE 
+                SET cleaned_text = EXCLUDED.cleaned_text,
                     category = EXCLUDED.category;
             """
             
             cur = conn.cursor()
-            execute_values(cur, query, records)
+            # Use page_size=100 to batch inserts and avoid "server closed connection" on large payloads
+            execute_values(cur, query, records, page_size=100)
             conn.commit()
             print(f"[DB] Berhasil upsert {len(records)} data.")
             cur.close()
             return True
 
         except Exception as e:
-            conn.rollback()
+            try:
+                if conn: conn.rollback()
+            except:
+                pass # Connection was likely already closed
             print(f"[DB] Transaction Error: {e}")
             return False
         finally:

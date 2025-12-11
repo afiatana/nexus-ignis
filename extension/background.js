@@ -1,7 +1,11 @@
 // Configuration
-const API_URL = 'https://your-railway-app.up.railway.app/submit-url';
-// ⚠️ IMPORTANT: Update this URL after deploying to Railway!
-// Example: 'https://nexus-ignis-production.up.railway.app/submit-url'
+try {
+    importScripts('config.js');
+} catch (e) {
+    console.error("Failed to load config.js", e);
+}
+
+const API_URL = (typeof CONFIG !== 'undefined') ? CONFIG.API_URL : 'http://localhost:5000/submit-url';
 
 // Background service worker for detecting 404 pages
 chrome.webNavigation.onCompleted.addListener(async (details) => {
