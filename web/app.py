@@ -87,25 +87,36 @@ def search():
         if conn:
             try:
                 cur = conn.cursor()
-                # Full Text Search with Category
+                # Multi-language Full Text Search (Indonesian + English)
                 sql = """
                     SELECT original_url, 
-                           ts_headline('indonesian', cleaned_text, plainto_tsquery('indonesian', %s)) as snippet,
+                           ts_headline('indonesian', cleaned_text, plainto_tsquery('indonesian', %s)) as snippet_id,
+                           ts_headline('english', cleaned_text, plainto_tsquery('english', %s)) as snippet_en,
                            archive_timestamp,
                            category
                     FROM archived_documents
-                    WHERE to_tsvector('indonesian', cleaned_text) @@ plainto_tsquery('indonesian', %s)
-                    ORDER BY ts_rank(to_tsvector('indonesian', cleaned_text), plainto_tsquery('indonesian', %s)) DESC
+                    WHERE 
+                        to_tsvector('indonesian', cleaned_text) @@ plainto_tsquery('indonesian', %s)
+                        OR
+                        to_tsvector('english', cleaned_text) @@ plainto_tsquery('english', %s)
+                    ORDER BY 
+                        (ts_rank(to_tsvector('indonesian', cleaned_text), plainto_tsquery('indonesian', %s)) +
+                         ts_rank(to_tsvector('english', cleaned_text), plainto_tsquery('english', %s))) DESC
                     LIMIT 20;
                 """
-                cur.execute(sql, (query, query, query))
+                # Params: query, query, query, query, query, query
+                cur.execute(sql, (query, query, query, query, query, query))
+                
                 rows = cur.fetchall()
                 for row in rows:
+                    # Choose the best snippet (if indonesian snippet is empty, use english)
+                    snippet = row[1] if "<b>" in str(row[1]) else row[2]
+                    
                     results.append({
                         "original_url": row[0],
-                        "snippet": row[1],
-                        "archive_timestamp": row[2],
-                        "category": row[3] if len(row) > 3 else "General"
+                        "snippet": snippet,
+                        "archive_timestamp": row[3],
+                        "category": row[4] if len(row) > 4 else "General"
                     })
                 cur.close()
                 conn.close()
