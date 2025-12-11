@@ -17,6 +17,28 @@ def get_db_connection():
 def index():
     return render_template('index.html', query="", results=[])
 
+def init_db():
+    """Initializes the database using schema.sql"""
+    conn = get_db_connection()
+    if conn:
+        try:
+            with app.open_resource('../db/schema.sql', mode='r') as f:
+                schema_sql = f.read()
+            
+            cur = conn.cursor()
+            cur.execute(schema_sql)
+            conn.commit()
+            cur.close()
+            conn.close()
+            print("Database initialized successfully.")
+        except Exception as e:
+            print(f"DB Init Error: {e}")
+
+# Attempt to initialize DB on startup if URL is present (Cloud environment)
+if os.environ.get("DATABASE_URL"):
+    with app.app_context():
+        init_db()
+
 @app.route('/search')
 def search():
     query = request.args.get('q', '')
