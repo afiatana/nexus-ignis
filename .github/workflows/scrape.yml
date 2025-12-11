@@ -9,6 +9,8 @@ on:
 jobs:
   scrape_and_archive:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
     
     steps:
     - name: Checkout code
@@ -25,8 +27,6 @@ jobs:
         pip install -r requirements.txt
 
     - name: Run Collector & Archivist Pipeline
-      env:
-        DATABASE_URL: ${{ secrets.DATABASE_URL }}
       run: |
         # Ensure data directory exists
         mkdir -p data
