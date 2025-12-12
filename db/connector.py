@@ -128,3 +128,64 @@ class DBConnector:
             return False
         finally:
             conn.close()
+
+    def init_db(self, schema_path):
+        if not os.path.exists(schema_path):
+             print(f"[DB] Schema file not found: {schema_path}")
+             return False
+
+        conn = self.get_connection()
+        if not conn: return False
+        try:
+            with open(schema_path, 'r') as f:
+                schema_sql = f.read()
+            cur = conn.cursor()
+            cur.execute(schema_sql)
+            conn.commit()
+            cur.close()
+            print(f"[DB] Database initialized successfully.")
+            return True
+        except Exception as e:
+            print(f"[DB] Init Error: {e}")
+            try: conn.rollback()
+            except: pass
+            return False
+        finally:
+            conn.close()
+
+    def fix_constraints(self):
+        """Fixes the UNIQUE constraint issue on archived_documents"""
+        conn = self.get_connection()
+        if not conn: return
+        try:
+            cur = conn.cursor()
+            # 1. Drop old constraint if exists (default name often archived_documents_original_url_key)
+            cur.execute("""
+                DO $$
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'archived_documents_original_url_key') THEN
+                        ALTER TABLE archived_documents DROP CONSTRAINT archived_documents_original_url_key;
+                    END IF;
+                END $$;
+            """)
+            
+            # 2. Add new constraint if missing
+            cur.execute("""
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'archived_documents_url_ts_unique') THEN
+                        ALTER TABLE archived_documents ADD CONSTRAINT archived_documents_url_ts_unique UNIQUE (original_url, archive_timestamp);
+                    END IF;
+                END $$;
+            """)
+            
+            conn.commit()
+            cur.close()
+            print("[DB] Schema constraints validated.")
+        except Exception as e:
+            # Clean up duplicates if adding constraint failed (Optional but good)
+            print(f"[DB] Schema Fix Error (Non-fatal): {e}")
+            try: conn.rollback()
+            except: pass
+        finally:
+            conn.close()

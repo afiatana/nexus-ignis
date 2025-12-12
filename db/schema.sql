@@ -3,11 +3,12 @@
 
 CREATE TABLE IF NOT EXISTS archived_documents (
     id SERIAL PRIMARY KEY,
-    original_url TEXT UNIQUE NOT NULL,
-    archive_timestamp TIMESTAMP WITH TIME ZONE, -- Menggunakan TIMESTAMPTZ agar akurat
+    original_url TEXT NOT NULL,
+    archive_timestamp TIMESTAMP WITH TIME ZONE,
     cleaned_text TEXT,
-    category VARCHAR(50) DEFAULT 'General', -- Auto-detected category
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    category VARCHAR(50) DEFAULT 'General',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    CONSTRAINT archived_documents_url_ts_unique UNIQUE (original_url, archive_timestamp)
 );
 
 -- Membuat GIN Index untuk Full-Text Search yang efisien

@@ -31,6 +31,18 @@ def main():
         with open(seed_file, "w") as f:
             f.write("https://google.com\nhttps://thisurldoesnotexist123456789.com\nhttps://friendster.com")
             
+    # --- PRE-FLIGHT CHECKS: DB SCHEMA ---
+    try:
+        print("\n[DB] Checking schema...")
+        db_check = DBConnector()
+        schema_path = os.path.join(base_dir, "db", "schema.sql")
+        # Ensure tables exist
+        db_check.init_db(schema_path)
+        # Fix uniqueness constraints
+        db_check.fix_constraints()
+    except Exception as e:
+        print(f"[DB] Schema warning: {e}")
+
     # Sync Reports from DB to Seed List
     try:
         from db.connector import DBConnector
