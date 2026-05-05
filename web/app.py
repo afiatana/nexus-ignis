@@ -4,6 +4,8 @@ import os
 import zipfile
 import tempfile
 
+from web.search_service import normalize_search_params, search_archives, empty_search_response
+
 app = Flask(__name__)
 
 def get_db_connection():
@@ -20,12 +22,11 @@ def init_db():
     conn = get_db_connection()
     if conn:
         try:
-            # Try multiple possible paths for schema.sql
             base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             schema_paths = [
-                os.path.join(base_dir, 'db', 'schema.sql'),  # Local/Railway
-                os.path.join(os.path.dirname(__file__), '..', 'db', 'schema.sql'),  # Relative
-                '/app/db/schema.sql',  # Railway absolute path
+                os.path.join(base_dir, 'db', 'schema.sql'),
+                os.path.join(os.path.dirname(__file__), '..', 'db', 'schema.sql'),
+                '/app/db/schema.sql',
             ]
             
             schema_sql = None
@@ -49,7 +50,6 @@ def init_db():
         except Exception as e:
             print(f"DB Init Error: {e}")
 
-# Attempt to initialize DB on startup if URL is present (Cloud environment)
 if os.environ.get("DATABASE_URL"):
     with app.app_context():
         init_db()
@@ -78,51 +78,32 @@ def about():
 
 @app.route('/search')
 def search():
-    query = request.args.get('q', '')
-    results = []
-    
-    if query:
+    params = normalize_search_params(
+        query=request.args.get('q', ''),
+        category=request.args.get('category'),
+        domain=request.args.get('domain'),
+        year=request.args.get('year'),
+        page=request.args.get('page', 1),
+        page_size=request.args.get('page_size', 20),
+    )
+    search_payload = empty_search_response(params)
+
+    if params.query:
         conn = get_db_connection()
         if conn:
             try:
-                cur = conn.cursor()
-                # Multi-language Full Text Search (Indonesian + English)
-                sql = """
-                    SELECT original_url, 
-                           ts_headline('indonesian', cleaned_text, plainto_tsquery('indonesian', %s)) as snippet_id,
-                           ts_headline('english', cleaned_text, plainto_tsquery('english', %s)) as snippet_en,
-                           archive_timestamp,
-                           category
-                    FROM archived_documents
-                    WHERE 
-                        to_tsvector('indonesian', cleaned_text) @@ plainto_tsquery('indonesian', %s)
-                        OR
-                        to_tsvector('english', cleaned_text) @@ plainto_tsquery('english', %s)
-                    ORDER BY 
-                        (ts_rank(to_tsvector('indonesian', cleaned_text), plainto_tsquery('indonesian', %s)) +
-                         ts_rank(to_tsvector('english', cleaned_text), plainto_tsquery('english', %s))) DESC
-                    LIMIT 20;
-                """
-                # Params: query, query, query, query, query, query
-                cur.execute(sql, (query, query, query, query, query, query))
-                
-                rows = cur.fetchall()
-                for row in rows:
-                    # Choose the best snippet (if indonesian snippet is empty, use english)
-                    snippet = row[1] if "<b>" in str(row[1]) else row[2]
-                    
-                    results.append({
-                        "original_url": row[0],
-                        "snippet": snippet,
-                        "archive_timestamp": row[3],
-                        "category": row[4] if len(row) > 4 else "General"
-                    })
-                cur.close()
-                conn.close()
+                search_payload = search_archives(conn, params)
             except Exception as e:
                 print(f"Search Error: {e}")
+            finally:
+                conn.close()
 
-    return render_template('search_results.html', query=query, results=results)
+    return render_template(
+        'search_results.html',
+        query=search_payload['query'],
+        results=search_payload['results'],
+        search=search_payload,
+    )
 
 @app.route('/suggest')
 def suggest():
@@ -135,8 +116,6 @@ def suggest():
     if conn:
         try:
             cur = conn.cursor()
-            # Gunakan ts_stat untuk mencari kata-kata yang paling sering muncul
-            # yang diawali dengan huruf yang diketik user (prefix match)
             sql = """
                 SELECT word 
                 FROM ts_stat('SELECT to_tsvector(''indonesian'', cleaned_text) FROM archived_documents') 
@@ -162,10 +141,6 @@ def get_recent_urls():
     if conn:
         try:
             cur = conn.cursor()
-            # Get PENDING and CONFIRMED_DEAD, prioritizing Dead ones
-            # If user wants strictly "after execution", we should focus on CONFIRMED_DEAD
-            # But to show liveliness, we show PENDING too with a status indicator logic in frontend if needed.
-            # For now, let's fetch valid ones.
             cur.execute("""
                 SELECT url, status 
                 FROM reported_urls 
@@ -176,7 +151,6 @@ def get_recent_urls():
                 LIMIT 20;
             """)
             rows = cur.fetchall()
-            # Just return URL list for now to match frontend expectation
             recent_urls = [row[0] for row in rows]
             cur.close()
             conn.close()
@@ -192,7 +166,7 @@ def submit_url():
     try:
         data = request.get_json()
         url = data.get('url', '').strip()
-        source = data.get('source', 'unknown')  # 'extension' or 'community'
+        source = data.get('source', 'unknown')
         
         if not url:
             return jsonify({"success": False, "message": "URL is required"}), 400
@@ -203,7 +177,6 @@ def submit_url():
 
         try:
             cur = conn.cursor()
-            # Try insert, ignore if duplicate
             cur.execute("""
                 INSERT INTO reported_urls (url, source, status) 
                 VALUES (%s, %s, 'PENDING')
@@ -237,8 +210,6 @@ def download_extension():
     try:
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         extension_dir = os.path.join(base_dir, 'extension')
-        
-        # Create a temporary ZIP file
         temp_zip = tempfile.NamedTemporaryFile(delete=False, suffix='.zip')
         
         with zipfile.ZipFile(temp_zip.name, 'w', zipfile.ZIP_DEFLATED) as zipf:
@@ -247,13 +218,9 @@ def download_extension():
                     file_path = os.path.join(root, file)
                     arcname = os.path.relpath(file_path, extension_dir)
                     
-                    # Dynamically update config.js with current server URL
                     if file == 'config.js':
-                        # Get current base URL (e.g., https://my-app.railway.app/)
                         base_url = request.url_root.rstrip('/')
                         api_url = f"{base_url}/submit-url"
-                        
-                        # Create new config content
                         config_content = f"""
 // Auto-generated config
 const CONFIG = {{
