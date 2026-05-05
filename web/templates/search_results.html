@@ -17,11 +17,7 @@
             --font-stack: 'Courier New', Courier, monospace;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: var(--font-stack);
@@ -30,22 +26,17 @@
             min-height: 100vh;
         }
 
-        /* Scanline effect */
         body::before {
             content: " ";
             display: block;
             position: fixed;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
+            inset: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
             z-index: 2;
             background-size: 100% 2px, 3px 100%;
             pointer-events: none;
         }
 
-        /* Header with search */
         .header {
             background: var(--card-bg);
             border-bottom: 2px solid var(--text-secondary);
@@ -68,35 +59,39 @@
             white-space: nowrap;
         }
 
-        .logo:hover {
-            text-shadow: 0 0 10px rgba(255, 69, 0, 0.8);
-        }
-
         .search-form {
             flex: 1;
             min-width: 300px;
-            position: relative;
+            display: grid;
+            grid-template-columns: minmax(180px, 1fr) 140px 120px 110px auto;
+            gap: 0.5rem;
+            align-items: center;
         }
 
-        .search-form input {
+        .search-form input,
+        .search-form select,
+        .search-form button {
             width: 100%;
             padding: 0.75rem 1rem;
             background: #000;
             border: 2px solid var(--text-primary);
             color: var(--text-primary);
             font-family: var(--font-stack);
-            font-size: 1rem;
+            font-size: 0.9rem;
         }
 
-        .search-form input:focus {
-            outline: none;
+        .search-form button {
+            cursor: pointer;
+            background: var(--accent);
+            color: #000;
+            font-weight: bold;
             border-color: var(--accent);
-            box-shadow: 0 0 10px rgba(255, 69, 0, 0.3);
         }
 
-        /* Results container */
+        .search-form button:hover { background: var(--accent-hover); }
+
         .container {
-            max-width: 800px;
+            max-width: 960px;
             margin: 0 auto;
             padding: 2rem;
             position: relative;
@@ -109,18 +104,11 @@
             font-size: 0.9rem;
             padding-bottom: 1rem;
             border-bottom: 1px solid var(--text-secondary);
+            line-height: 1.6;
         }
 
-        .results-count {
-            color: var(--accent);
-            font-weight: bold;
-        }
-
-        .results {
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-        }
+        .results-count { color: var(--accent); font-weight: bold; }
+        .results { display: flex; flex-direction: column; gap: 2rem; }
 
         .result-card {
             background-color: var(--card-bg);
@@ -137,8 +125,6 @@
             left: 0.5rem;
             top: 1.5rem;
             color: var(--accent);
-            width: 1rem;
-            height: 1rem;
             opacity: 0.5;
         }
 
@@ -156,13 +142,9 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            font-family: var(--font-stack);
         }
 
-        .url:hover {
-            color: var(--accent);
-            text-decoration: none;
-        }
+        .url:hover { color: var(--accent); }
 
         .result-title {
             color: var(--text-primary);
@@ -173,15 +155,11 @@
             display: block;
         }
 
-        .result-title:hover {
-            text-decoration: underline;
-            color: var(--accent);
-        }
+        .result-title:hover { text-decoration: underline; color: var(--accent); }
 
         .category-badge {
             display: inline-block;
             padding: 0.25rem 0.75rem;
-            margin-left: 0.5rem;
             font-size: 0.75rem;
             font-weight: bold;
             border: 1px solid;
@@ -190,35 +168,11 @@
             letter-spacing: 0.05em;
         }
 
-        .category-code {
-            background-color: #1a1a2e;
-            color: #00ff41;
-            border-color: #00ff41;
-        }
-
-        .category-academic {
-            background-color: #1a1a2e;
-            color: #00bfff;
-            border-color: #00bfff;
-        }
-
-        .category-news {
-            background-color: #1a1a2e;
-            color: #ffaa00;
-            border-color: #ffaa00;
-        }
-
-        .category-forum {
-            background-color: #1a1a2e;
-            color: #ff00ff;
-            border-color: #ff00ff;
-        }
-
-        .category-general {
-            background-color: #1a1a2e;
-            color: var(--text-secondary);
-            border-color: var(--text-secondary);
-        }
+        .category-code { background-color: #1a1a2e; color: #00ff41; border-color: #00ff41; }
+        .category-academic { background-color: #1a1a2e; color: #00bfff; border-color: #00bfff; }
+        .category-news { background-color: #1a1a2e; color: #ffaa00; border-color: #ffaa00; }
+        .category-forum { background-color: #1a1a2e; color: #ff00ff; border-color: #ff00ff; }
+        .category-general { background-color: #1a1a2e; color: var(--text-secondary); border-color: var(--text-secondary); }
 
         .snippet {
             color: #ddd;
@@ -226,18 +180,54 @@
             line-height: 1.6;
         }
 
-        .snippet b {
+        .highlight {
             background-color: var(--snippet-highlight);
             color: var(--accent);
             padding: 0 2px;
             font-weight: bold;
         }
 
-        .meta-info {
-            margin-top: 0.75rem;
-            font-size: 0.8em;
+        .result-meta {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            font-size: 0.85rem;
             color: var(--text-secondary);
+            margin-bottom: 0.75rem;
         }
+
+        .meta-links {
+            margin-top: 1rem;
+            padding-top: 0.75rem;
+            border-top: 1px dashed #333;
+            display: flex;
+            gap: 1.5rem;
+            font-size: 0.85rem;
+            flex-wrap: wrap;
+        }
+
+        .meta-links a { color: var(--text-secondary); text-decoration: none; }
+        .meta-links a:hover { color: var(--accent); text-decoration: underline; }
+
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--text-secondary);
+        }
+
+        .page-link {
+            color: var(--accent);
+            text-decoration: none;
+            border: 1px solid var(--accent);
+            padding: 0.75rem 1rem;
+        }
+
+        .page-link:hover { background: var(--accent); color: #000; }
+        .page-link.disabled { opacity: 0.35; pointer-events: none; }
 
         .empty-state {
             text-align: center;
@@ -248,144 +238,105 @@
             padding: 3rem 2rem;
         }
 
-        .empty-state h2 {
-            color: var(--accent);
-            margin-bottom: 1rem;
-        }
+        .empty-state h2 { color: var(--accent); margin-bottom: 1rem; }
+        .back-link { display: inline-block; margin-top: 1rem; color: var(--accent); text-decoration: none; }
 
-        .back-link {
-            display: inline-block;
-            margin-top: 1rem;
-            color: var(--accent);
-            text-decoration: none;
-        }
-
-        .back-link:hover {
-            text-decoration: underline;
-        }
-
-        @media (max-width: 768px) {
-            .header {
-                padding: 1rem;
-            }
-
-            .logo {
-                font-size: 1.2rem;
-            }
-
-            .container {
-                padding: 1rem;
-            }
-
-            .search-form {
-                width: 100%;
-            }
-        }
-
-        .result-meta {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            margin-bottom: 0.5rem;
-            font-family: var(--font-stack);
-        }
-
-        .meta-links {
-            margin-top: 1rem;
-            padding-top: 0.75rem;
-            border-top: 1px dashed #333;
-            display: flex;
-            gap: 1.5rem;
-            font-size: 0.85rem;
-        }
-
-        .meta-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-            transition: color 0.2s;
-        }
-
-        .meta-links a:hover {
-            color: var(--accent);
-            text-decoration: underline;
+        @media (max-width: 900px) {
+            .search-form { grid-template-columns: 1fr 1fr; width: 100%; }
+            .container { padding: 1rem; }
         }
 
         @media (max-width: 600px) {
-            .meta-links {
-                flex-direction: column;
-                gap: 0.5rem;
-            }
+            .header { padding: 1rem; }
+            .logo { font-size: 1.2rem; }
+            .search-form { grid-template-columns: 1fr; }
+            .pagination { gap: 1rem; flex-direction: column; }
         }
     </style>
 </head>
 
 <body>
-    <!-- Sticky Header dengan Search -->
     <div class="header">
         <a href="/" class="logo">🔥 NEXUS IGNIS</a>
         <form action="/search" method="GET" class="search-form">
-            <input type="text" name="q" placeholder="> Masukkan kueri pencarian..." value="{{ query }}" required
-                autocomplete="off" autofocus>
+            <input type="text" name="q" placeholder="> Masukkan kueri pencarian..." value="{{ query }}" required autocomplete="off" autofocus>
+            <input type="text" name="domain" placeholder="domain" value="{{ search.filters.domain or '' }}">
+            <input type="number" name="year" placeholder="tahun" value="{{ search.filters.year or '' }}">
+            <select name="category">
+                {% set selected_category = search.filters.category or '' %}
+                <option value="" {% if not selected_category %}selected{% endif %}>Semua</option>
+                <option value="General" {% if selected_category == 'General' %}selected{% endif %}>General</option>
+                <option value="Code" {% if selected_category == 'Code' %}selected{% endif %}>Code</option>
+                <option value="Academic" {% if selected_category == 'Academic' %}selected{% endif %}>Academic</option>
+                <option value="News" {% if selected_category == 'News' %}selected{% endif %}>News</option>
+                <option value="Forum" {% if selected_category == 'Forum' %}selected{% endif %}>Forum</option>
+            </select>
+            <button type="submit">Cari</button>
         </form>
     </div>
 
-    <!-- Results Container -->
     <div class="container">
         {% if results %}
         <div class="results-info">
-            Ditemukan <span class="results-count">{{ results|length }}</span> hasil untuk "<span
-                class="results-count">{{ query }}</span>"
+            Ditemukan <span class="results-count">{{ search.total }}</span> hasil untuk "<span class="results-count">{{ query }}</span>".
+            Halaman <span class="results-count">{{ search.page }}</span>, menampilkan {{ results|length }} hasil.
         </div>
 
         <div class="results">
             {% for result in results %}
-            <!-- Calculate Wayback URL -->
-            {% set wb_timestamp = result.archive_timestamp.strftime('%Y%m%d%H%M%S') %}
-            {% set wb_url = 'https://web.archive.org/web/' + wb_timestamp + '/' + result.original_url %}
+            {% set wb_timestamp = result.archive_timestamp.strftime('%Y%m%d%H%M%S') if result.archive_timestamp else '' %}
+            {% set computed_wb_url = 'https://web.archive.org/web/' + wb_timestamp + '/' + result.original_url if wb_timestamp else result.original_url %}
+            {% set snapshot_url = result.snapshot_url or computed_wb_url %}
             {% set calendar_url = 'https://web.archive.org/web/*/' + result.original_url %}
 
             <div class="result-card">
-                <!-- Meta Header -->
                 <div class="result-meta">
-                    <span title="Date Archived">📅 {{ result.archive_timestamp.strftime('%d %b %Y, %H:%M') }}</span>
-                    <span class="category-badge category-{{ result.category|lower }}">{{ result.category }}</span>
+                    {% if result.archive_timestamp %}<span title="Date Archived">📅 {{ result.archive_timestamp.strftime('%d %b %Y, %H:%M') }}</span>{% endif %}
+                    {% if result.domain %}<span>🌐 {{ result.domain }}</span>{% endif %}
+                    {% if result.archive_year %}<span>🗓️ {{ result.archive_year }}</span>{% endif %}
+                    <span class="category-badge category-{{ (result.category or 'General')|lower }}">{{ result.category or 'General' }}</span>
+                    {% if result.rank is defined %}<span>Rank: {{ '%.4f'|format(result.rank) }}</span>{% endif %}
                 </div>
 
-                <!-- Main Title Link -->
-                <a href="{{ wb_url }}" class="result-title" target="_blank">
-                    Snapshot of {{ result.original_url }}
+                <a href="{{ snapshot_url }}" class="result-title" target="_blank" rel="noopener noreferrer">
+                    {{ result.title or ('Snapshot of ' ~ result.original_url) }}
                 </a>
 
-                <!-- Original URL Display -->
-                <a href="{{ result.original_url }}" class="url" target="_blank">
+                <a href="{{ result.original_url }}" class="url" target="_blank" rel="noopener noreferrer">
                     Original: {{ result.original_url }}
                 </a>
 
-                <!-- Snippet -->
                 <div class="snippet">
-                    ...{{ result.snippet|safe }}...
+                    ...
+                    {% set parts = (result.snippet or '') .split('[[[HL]]]') %}
+                    {{ parts[0] }}
+                    {% for part in parts[1:] %}
+                        {% set pair = part.split('[[[/HL]]]', 1) %}
+                        <span class="highlight">{{ pair[0] }}</span>{% if pair|length > 1 %}{{ pair[1] }}{% endif %}
+                    {% endfor %}
+                    ...
                 </div>
 
-                <!-- Action Links -->
                 <div class="meta-links">
-                    <a href="{{ wb_url }}" target="_blank">⚡ View Snapshot</a>
-                    <a href="{{ calendar_url }}" target="_blank">📅 View History (Calendar)</a>
-                    <a href="{{ result.original_url }}" target="_blank">🔗 Visit Original URL</a>
+                    <a href="{{ snapshot_url }}" target="_blank" rel="noopener noreferrer">⚡ View Snapshot</a>
+                    <a href="{{ calendar_url }}" target="_blank" rel="noopener noreferrer">📅 View History</a>
+                    <a href="{{ result.original_url }}" target="_blank" rel="noopener noreferrer">🔗 Visit Original</a>
                 </div>
             </div>
             {% endfor %}
+        </div>
+
+        <div class="pagination">
+            {% set base_params = 'q=' ~ query ~ '&domain=' ~ (search.filters.domain or '') ~ '&year=' ~ (search.filters.year or '') ~ '&category=' ~ (search.filters.category or '') ~ '&page_size=' ~ search.page_size %}
+            <a class="page-link {% if not search.has_prev %}disabled{% endif %}" href="/search?{{ base_params }}&page={{ search.page - 1 }}">← Sebelumnya</a>
+            <span>Page {{ search.page }}</span>
+            <a class="page-link {% if not search.has_next %}disabled{% endif %}" href="/search?{{ base_params }}&page={{ search.page + 1 }}">Berikutnya →</a>
         </div>
         {% else %}
         <div class="empty-state">
             <h2>⚠️ TIDAK ADA HASIL</h2>
             <p>SYSTEM MESSAGE: Data '{{ query }}' not found in archives.</p>
-            <p style="margin-top: 1rem;">Coba kata kunci yang berbeda atau laporkan link mati untuk membantu memperluas
-                database.</p>
+            <p style="margin-top: 1rem;">Coba kata kunci yang berbeda, ubah filter, atau laporkan link mati untuk membantu memperluas database.</p>
             <a href="/" class="back-link">← Kembali ke Halaman Utama</a>
         </div>
         {% endif %}

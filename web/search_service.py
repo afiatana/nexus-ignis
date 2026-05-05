@@ -15,6 +15,8 @@ from psycopg2.extras import RealDictCursor
 
 DEFAULT_PAGE_SIZE = 20
 MAX_PAGE_SIZE = 50
+HIGHLIGHT_START = "[[[HL]]]"
+HIGHLIGHT_STOP = "[[[/HL]]]"
 
 
 @dataclass(frozen=True)
@@ -29,6 +31,23 @@ class SearchParams:
     @property
     def offset(self) -> int:
         return (self.page - 1) * self.page_size
+
+
+def empty_search_response(params: SearchParams) -> dict[str, Any]:
+    return {
+        "query": params.query,
+        "results": [],
+        "page": params.page,
+        "page_size": params.page_size,
+        "total": 0,
+        "has_next": False,
+        "has_prev": params.page > 1,
+        "filters": {
+            "category": params.category,
+            "domain": params.domain,
+            "year": params.year,
+        },
+    }
 
 
 def normalize_search_params(
@@ -93,20 +112,7 @@ def search_archives(conn: psycopg2.extensions.connection, params: SearchParams) 
     """
 
     if not params.query:
-        return {
-            "query": params.query,
-            "results": [],
-            "page": params.page,
-            "page_size": params.page_size,
-            "total": 0,
-            "has_next": False,
-            "has_prev": params.page > 1,
-            "filters": {
-                "category": params.category,
-                "domain": params.domain,
-                "year": params.year,
-            },
-        }
+        return empty_search_response(params)
 
     where_clauses = [
         "search_vector @@ websearch_to_tsquery('indonesian', %(query)s)"
@@ -147,7 +153,7 @@ def search_archives(conn: psycopg2.extensions.connection, params: SearchParams) 
                     'indonesian',
                     coalesce(cleaned_text, ''),
                     websearch_to_tsquery('indonesian', %(query)s),
-                    'StartSel=<mark>, StopSel=</mark>, MaxWords=35, MinWords=12, ShortWord=3, HighlightAll=false'
+                    'StartSel={HIGHLIGHT_START}, StopSel={HIGHLIGHT_STOP}, MaxWords=35, MinWords=12, ShortWord=3, HighlightAll=false'
                 ) AS snippet
             FROM (
                 SELECT
