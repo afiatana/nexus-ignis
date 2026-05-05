@@ -1,0 +1,49 @@
+name: Quality Checks
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master", "hardening-basic", "search-quality-ui"]
+  workflow_dispatch:
+
+jobs:
+  lint-test-security:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Compile Python files
+        run: |
+          python -m compileall archivist db web main.py
+
+      - name: Lint with Ruff
+        run: |
+          ruff check archivist db web tests main.py
+
+      - name: Run tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/nexus_ignis
+        run: |
+          pytest -q
+
+      - name: Security scan with Bandit
+        run: |
+          bandit -r archivist db web -x tests
+
+      - name: Dependency vulnerability audit
+        run: |
+          pip-audit -r requirements.txt
