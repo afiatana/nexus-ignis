@@ -9,9 +9,11 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
         return;
     }
 
-    // Validate URL format
     try {
-        new URL(url);
+        const parsedUrl = new URL(url);
+        if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+            throw new Error('Only http and https URLs are allowed');
+        }
     } catch (e) {
         statusDiv.textContent = 'Invalid URL format';
         statusDiv.style.borderColor = '#ff0000';
@@ -21,7 +23,6 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
     statusDiv.textContent = 'Submitting...';
     statusDiv.style.borderColor = '#ffaa00';
 
-    // Send to background script
     chrome.runtime.sendMessage(
         { action: 'submitUrl', url: url },
         (response) => {
@@ -31,7 +32,7 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
                 urlInput.value = '';
 
                 setTimeout(() => {
-                    statusDiv.textContent = 'Dead Link Hunter Active';
+                    statusDiv.textContent = 'Manual Dead Link Reporter';
                     statusDiv.style.borderColor = '#ffb000';
                 }, 3000);
             } else {
@@ -42,12 +43,10 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
     );
 });
 
-// Get current tab URL and populate input
 chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     if (tabs[0]) {
         const currentUrl = tabs[0].url;
-        // Only populate if it's a http/https URL
-        if (currentUrl.startsWith('http')) {
+        if (currentUrl && currentUrl.startsWith('http')) {
             document.getElementById('urlInput').value = currentUrl;
         }
     }

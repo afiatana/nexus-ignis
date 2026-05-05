@@ -1,17 +1,12 @@
 {
     "manifest_version": 3,
     "name": "Nexus Ignis - Dead Link Hunter",
-    "version": "1.0",
-    "description": "Automatically report 404 pages to Nexus Ignis archive system",
+    "version": "1.1",
+    "description": "Manually report dead links to Nexus Ignis archive system",
     "permissions": [
-        "activeTab",
-        "webNavigation",
-        "scripting",
-        "notifications"
+        "activeTab"
     ],
-    "host_permissions": [
-        "<all_urls>"
-    ],
+    "host_permissions": [],
     "background": {
         "service_worker": "background.js"
     },

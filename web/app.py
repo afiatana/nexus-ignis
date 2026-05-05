@@ -5,8 +5,10 @@ import zipfile
 import tempfile
 
 from web.search_service import normalize_search_params, search_archives, empty_search_response
+from web.abuse_protection import InMemoryRateLimiter, get_rate_limit_key, validate_public_url
 
 app = Flask(__name__)
+submit_rate_limiter = InMemoryRateLimiter()
 
 def get_db_connection():
     dsn = os.environ.get("DATABASE_URL")
@@ -163,14 +165,20 @@ def get_recent_urls():
 @app.route('/submit-url', methods=['POST'])
 def submit_url():
     """API endpoint for receiving dead URL submissions from extension or community"""
+    rate_key = get_rate_limit_key(request.remote_addr, request.headers.get('X-Forwarded-For'))
+    if not submit_rate_limiter.is_allowed(rate_key):
+        return jsonify({"success": False, "message": "Too many submissions. Please try again later."}), 429
+
     try:
-        data = request.get_json()
-        url = data.get('url', '').strip()
-        source = data.get('source', 'unknown')
-        
-        if not url:
-            return jsonify({"success": False, "message": "URL is required"}), 400
-        
+        data = request.get_json(silent=True) or {}
+        raw_url = data.get('url', '').strip()
+        source = (data.get('source', 'unknown') or 'unknown').strip()[:50]
+
+        validation = validate_public_url(raw_url)
+        if not validation.is_valid:
+            return jsonify({"success": False, "message": validation.error}), 400
+
+        url = validation.normalized_url
         conn = get_db_connection()
         if not conn:
             return jsonify({"success": False, "message": "Database error"}), 500
