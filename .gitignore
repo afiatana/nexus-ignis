@@ -1,8 +1,19 @@
 .env
+.env.*
+!.env.example
 __pycache__/
 *.pyc
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
 venv/
+.venv/
 .idea/
 .vscode/
 *.log
+*.tmp
+*.zip
+
+# Generated pipeline outputs
 data/archive_data.json
+data/dead_urls.txt
